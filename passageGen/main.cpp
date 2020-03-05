@@ -9,6 +9,7 @@ int main()
 	std::cin >> theme;
 
 	generateShit newArticle(theme);
+	newArticle.printShit();
 
 	return 0;
 }

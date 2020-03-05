@@ -12,6 +12,7 @@ public:
     {
         theme = shitTheme;
         datajson = new readData();
+        exWord = datajson->getWord();
 
         repeatTime = 2;
         maxWord = 6000;
@@ -78,7 +79,7 @@ protected:
     std::string newFamous()
     {
         std::string nextFamous;
-        nextFamous = ranList(datajson->readFileJson()->famousWord);
+        nextFamous = ranList(exWord->famousWord);
 
         repWord(nextFamous);
 
@@ -88,13 +89,14 @@ protected:
     std::string newBosh()
     {
         std::string nextBosh;
-        nextBosh = ranList(datajson->readFileJson()->famousWord);
+        nextBosh = ranList(exWord->boshWord);
 
         repWord(nextBosh);
 
         return nextBosh;
     }
 
+    //随机选取下一句话
     std::string ranList(std::vector<std::string>* nextWord)
     {
         std::default_random_engine random(time(NULL));
@@ -102,6 +104,14 @@ protected:
         int pos =  randomNum(random);
 
         std::string tmp;
+
+        std::vector <std::string>::iterator pStrContent = nextWord->begin();
+        while (pStrContent != nextWord->end())
+        {
+            std::cout << *pStrContent << std::endl;
+            pStrContent++;
+        }
+
         for (auto i : nextWord[pos])
         {
             tmp = tmp + i;
@@ -117,18 +127,20 @@ protected:
         startpos = word.find('a');   //找到'.'的位置
         if (startpos != std::string::npos) //std::string::npos表示没有找到该字符
         {
-            word.replace(startpos, 1, ranList(datajson->readFileJson()->beforeWord)); //实施替换，注意后面一定要用""引起来，表示字符串
+            word.replace(startpos, 1, ranList(exWord->beforeWord)); //实施替换，注意后面一定要用""引起来，表示字符串
         }
 
         startpos = word.find('b');   //找到'.'的位置
         if (startpos != std::string::npos) //std::string::npos表示没有找到该字符
         {
-            word.replace(startpos, 1, ranList(datajson->readFileJson()->afterWord)); //实施替换，注意后面一定要用""引起来，表示字符串
+            word.replace(startpos, 1, ranList(exWord->afterWord)); //实施替换，注意后面一定要用""引起来，表示字符串
         }
     }
 
 
     readData* datajson;
+    WordData* exWord;
+
     std::string theme;
     std::string passage;
 
@@ -137,3 +149,4 @@ protected:
     float maxWord;
 
 };
+

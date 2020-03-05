@@ -3,8 +3,9 @@
 #include <fstream>
 #include <vector>
 
-#include "json/json.h"
-#include "jsoncpp.cpp"
+#include "rapidjson/document.h"
+#include "rapidjson/stringbuffer.h"
+
 
 struct WordData {
 	std::vector<std::string>* famousWord;
@@ -19,6 +20,11 @@ public:
 	readData() 
 	{
 		wordData = new WordData;
+		fileStr = {};
+
+		readFile(fileStr);
+		parserJson(fileStr, document);
+		dealJson(document);
 	}
 	~readData() 
 	{
@@ -26,57 +32,113 @@ public:
 		wordData = nullptr;
 	}
 
-	WordData* readFileJson()
+
+
+	WordData* getWord()
+	{
+		return wordData;
+	}
+
+
+protected:
+	rapidjson::Document document;
+
+	std::string fileStr;
+
+	WordData* wordData; //数据
+
+	//读取JSON文件,装入一个字符串中
+	bool readFile(std::string& str)
 	{
 		//确认文件读取状态
-		std::ifstream in("data\\data.json", std::ios::binary);
+		//std::ifstream in("data\\data.json", std::ios::binary);
 
+		std::ifstream in;
+		in.open("data\\data.json", std::ifstream::in);
 		if (!in.is_open())
 		{
 			std::cout << "Error opening file\n";
 			return false;
 		}
 
-		if (reader.parse(in, root))
+		std::string line;
+		while (std::getline(in, line))
 		{
-			std::string name = root["title"].asString();
+			str.append(line + "\n");
+			std::cout << line;
+		}
+		in.close();
 
-			if (name == "example")
+		return true;
+	}
+
+	bool parserJson(std::string& str, rapidjson::Document& doc)
+	{
+		doc.Parse<0>(str.c_str());
+		if (doc.HasParseError())
+		{
+			std::cout << "error parser string\n";
+			return false;
+		}
+			
+		return true;
+	}
+
+	bool dealJson(rapidjson::Document& doc)
+	{
+		if (doc.IsObject())
+		{
+			
+			if (doc.HasMember("example"))
 			{
-				//wordData->testWord.push_back(root["famous"].asString());
-				for (size_t i = 0; i < root["famous"].size(); i++)
+				const rapidjson::Value& bFamous = doc["famous"];
+				if (bFamous.IsArray()) 
 				{
-					wordData->famousWord->push_back(root["famous"][i].asString()); //a 代表前面垫话，b代表后面垫话
+					for (rapidjson::SizeType i = 0; i < bFamous.Size(); i++)
+					{
+						wordData->famousWord->push_back(bFamous[i].GetString()); //a 代表前面垫话，b代表后面垫话
 
+					}
 				}
 
-				for (size_t i = 0; i < root["before"].size(); i++)
+				const rapidjson::Value& bBefore = doc["before"];
+				if (bFamous.IsArray())
 				{
-					wordData->beforeWord->push_back(root["before"][i].asString()); //在名人名言前面弄点废话
+					for (rapidjson::SizeType i = 0; i < bBefore.Size(); i++)
+					{
+						wordData->famousWord->push_back(bBefore[i].GetString()); //在名人名言前面弄点废话
 
+					}
 				}
 
-				for (size_t i = 0; i < root["after"].size(); i++)
+				const rapidjson::Value& bAfter = doc["after"];
+				if (bFamous.IsArray())
 				{
-					wordData->afterWord->push_back(root["after"][i].asString()); 
+					for (rapidjson::SizeType i = 0; i < bAfter.Size(); i++)
+					{
+						wordData->famousWord->push_back(bAfter[i].GetString()); //在名人名言后面弄点废话
 
-				}//在名人名言后面弄点废话
+					}
+				}
 
-				for (size_t i = 0; i < root["bosh"].size(); i++)
+				const rapidjson::Value& bBosh= doc["bosh"];
+				if (bFamous.IsArray())
 				{
-					wordData->boshWord->push_back(root["bosh"][i].asString()); 
+					for (rapidjson::SizeType i = 0; i < bBosh.Size(); i++)
+					{
+						wordData->famousWord->push_back(bBosh[i].GetString());//代表文章主要废话来源
 
-				}//代表文章主要废话来源
+					}
+				}
+
 			}
 
 		}
-		return wordData;
+
+		return true;
 	}
 
-protected:
-	Json::Reader reader;
-	Json::Value root;
 
-	WordData* wordData;
 };
+
 
